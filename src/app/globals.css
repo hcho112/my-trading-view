@@ -1,26 +1,159 @@
 @import "tailwindcss";
 
+/* Trading Dashboard Theme - Dark Mode First */
 :root {
+  /* Base colors */
+  --background: #0d1117;
+  --foreground: #e6edf3;
+
+  /* Card and surface colors */
+  --card: #161b22;
+  --card-foreground: #e6edf3;
+  --card-border: #30363d;
+
+  /* Muted colors for secondary text */
+  --muted: #21262d;
+  --muted-foreground: #8b949e;
+
+  /* Trading colors */
+  --positive: #3fb950;
+  --negative: #f85149;
+  --neutral: #8b949e;
+
+  /* Accent colors */
+  --accent: #58a6ff;
+  --accent-foreground: #ffffff;
+
+  /* Chart colors */
+  --chart-line: #58a6ff;
+  --chart-area: rgba(88, 166, 255, 0.1);
+  --chart-grid: #21262d;
+  --chart-crosshair: #484f58;
+
+  /* Border and radius */
+  --border: #30363d;
+  --radius: 0.5rem;
+}
+
+/* Light mode override - via class toggle or system preference */
+:root.light,
+html.light {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1f2328;
+
+  --card: #f6f8fa;
+  --card-foreground: #1f2328;
+  --card-border: #d0d7de;
+
+  --muted: #eaeef2;
+  --muted-foreground: #656d76;
+
+  --positive: #1a7f37;
+  --negative: #cf222e;
+  --neutral: #656d76;
+
+  --accent: #0969da;
+  --accent-foreground: #ffffff;
+
+  --chart-line: #0969da;
+  --chart-area: rgba(9, 105, 218, 0.1);
+  --chart-grid: #d0d7de;
+  --chart-crosshair: #8c959f;
+
+  --border: #d0d7de;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* Also respect system preference when no class is set */
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    --background: #ffffff;
+    --foreground: #1f2328;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --card: #f6f8fa;
+    --card-foreground: #1f2328;
+    --card-border: #d0d7de;
+
+    --muted: #eaeef2;
+    --muted-foreground: #656d76;
+
+    --positive: #1a7f37;
+    --negative: #cf222e;
+    --neutral: #656d76;
+
+    --accent: #0969da;
+    --accent-foreground: #ffffff;
+
+    --chart-line: #0969da;
+    --chart-area: rgba(9, 105, 218, 0.1);
+    --chart-grid: #d0d7de;
+    --chart-crosshair: #8c959f;
+
+    --border: #d0d7de;
   }
 }
 
+/* Tailwind CSS v4 theme configuration */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-border: var(--card-border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-neutral: var(--neutral);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius-card: var(--radius);
+}
+
+/* Base styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Chart container styles */
+.chart-container {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+}
+
+/* Utility classes for trading values */
+.text-positive {
+  color: var(--positive);
+}
+
+.text-negative {
+  color: var(--negative);
+}
+
+.text-neutral {
+  color: var(--neutral);
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }

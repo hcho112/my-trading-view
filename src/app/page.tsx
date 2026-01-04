@@ -1,65 +1,313 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+// ============================================
+// Dashboard.tsx - NEAR Trading Dashboard
+// ============================================
+// This is the main page that brings everything together.
+// Let's learn how to:
+// 1. Fetch data from our API using useEffect
+// 2. Manage loading/error states
+// 3. Connect the TradingView chart to real data
+// 4. Handle time range selection
+
+import { useEffect, useState, useCallback } from 'react';
+import { PriceChart } from '@/components/charts/PriceChart';
+import { ExchangePieChart } from '@/components/charts/ExchangePieChart';
+import { ExchangeBarChart } from '@/components/charts/ExchangeBarChart';
+import { VolumeTimeChart } from '@/components/charts/VolumeTimeChart';
+import { Header } from '@/components/dashboard/Header';
+import { Footer } from '@/components/dashboard/Footer';
+import { StatsCard, StatsCardGrid } from '@/components/dashboard/StatsCard';
+import { Time } from 'lightweight-charts';
+
+// ☝️ CONCEPT 1: TypeScript interfaces for API responses
+// Define the shape of data we expect from our API
+interface PriceData {
+  current: {
+    usd: number;
+    usd_24h_change: number;
+    btc: number;
+  };
+  historical: Array<{
+    time: Time;
+    value: number;
+  }>;
+}
+
+// ☝️ CONCEPT 2: Exchange data for volume charts
+interface ExchangeData {
+  name: string;
+  volume_usd: number;
+  trust_score: 'green' | 'yellow' | 'red';
+}
+
+interface VolumeData {
+  total_volume_24h: number;
+  exchange_count: number;
+  exchanges: ExchangeData[];
+  top_exchange: {
+    name: string;
+    volume: number;
+  };
+}
+
+// Time range options for the chart
+type TimeRange = '1H' | '24H' | '7D' | '30D';
+
+export default function Dashboard() {
+  // ☝️ CONCEPT 2: State management for async data
+  // We need to track: data, loading state, and errors
+  const [priceData, setPriceData] = useState<PriceData | null>(null);
+  const [volumeData, setVolumeData] = useState<VolumeData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedRange, setSelectedRange] = useState<TimeRange>('24H');
+
+  // ☝️ CONCEPT 3: Data fetching with useCallback
+  // useCallback memoizes the function so it doesn't change on every render
+  // This is important when the function is used as a dependency in useEffect
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch both prices and volumes in parallel
+      // Promise.all runs multiple promises concurrently - more efficient!
+      // Note: API expects lowercase range (1h, 24h, 7d, 30d)
+      const [pricesRes, volumesRes] = await Promise.all([
+        fetch(`/api/prices?range=${selectedRange.toLowerCase()}`),
+        fetch('/api/volumes'),
+      ]);
+
+      // Check for HTTP errors
+      if (!pricesRes.ok || !volumesRes.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
+      // Parse JSON responses
+      // ☝️ Our API returns: { success: boolean, data: {...}, timestamp: string }
+      const pricesResponse = await pricesRes.json();
+      const volumesResponse = await volumesRes.json();
+
+      // Extract data from the standardized API response format
+      const prices = pricesResponse.data;
+      const volumes = volumesResponse.data;
+
+      // The API already returns historical data in chart format:
+      // { time: 'YYYY-MM-DD', value: number }
+      // So we can use it directly!
+      setPriceData({
+        current: {
+          usd: prices?.current?.near_usd || 0,
+          usd_24h_change: prices?.current?.price_change_24h || 0,
+          btc: prices?.current?.near_btc || 0,
+        },
+        historical: prices?.historical || [],
+      });
+
+      // ☝️ Process exchange data for volume charts
+      const exchanges = volumes?.exchanges?.map((ex: { name?: string; exchange?: string; volume_usd: number; trust_score?: string }) => ({
+        name: ex.name || ex.exchange || 'Unknown',
+        volume_usd: ex.volume_usd || 0,
+        trust_score: (ex.trust_score as 'green' | 'yellow' | 'red') || 'yellow',
+      })) || [];
+
+      setVolumeData({
+        total_volume_24h: volumes?.total_volume_24h || 0,
+        exchange_count: exchanges.length,
+        exchanges,
+        top_exchange: exchanges[0]
+          ? { name: exchanges[0].name, volume: exchanges[0].volume_usd }
+          : { name: 'Unknown', volume: 0 },
+      });
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedRange]); // Re-create when selectedRange changes
+
+  // ☝️ CONCEPT 4: useEffect for data fetching
+  // Runs on mount and whenever fetchData changes (i.e., when selectedRange changes)
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // ☝️ CONCEPT 5: Formatting helpers
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    }).format(price);
+  };
+
+  const formatVolume = (volume: number) => {
+    if (volume >= 1_000_000_000) {
+      return `$${(volume / 1_000_000_000).toFixed(2)}B`;
+    }
+    if (volume >= 1_000_000) {
+      return `$${(volume / 1_000_000).toFixed(2)}M`;
+    }
+    return `$${(volume / 1_000).toFixed(2)}K`;
+  };
+
+  const formatChange = (change: number) => {
+    const sign = change >= 0 ? '+' : '';
+    return `${sign}${change.toFixed(2)}%`;
+  };
+
+  // ☝️ CONCEPT 6: Handle time range selection
+  const handleRangeChange = (range: TimeRange) => {
+    setSelectedRange(range);
+    // Data will automatically refetch due to useEffect dependency
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* ☝️ Using our new polished Header component */}
+      <Header onRefresh={fetchData} loading={loading} />
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8 flex-1">
+        {/* Error Banner */}
+        {error && (
+          <div className="mb-8 p-4 rounded-lg bg-negative/10 border border-negative/20">
+            <div className="flex items-center gap-3">
+              <span className="text-negative">Error: {error}</span>
+              <button
+                onClick={fetchData}
+                className="text-sm underline text-negative hover:text-negative/80"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ☝️ Using our new StatsCard components with loading states */}
+        <div className="mb-8">
+          <StatsCardGrid>
+            <StatsCard
+              label="NEAR Price"
+              value={formatPrice(priceData?.current.usd || 0)}
+              change={priceData?.current.usd_24h_change}
+              changeLabel="(24h)"
+              loading={loading}
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <StatsCard
+              label="24h Volume"
+              value={formatVolume(volumeData?.total_volume_24h || 0)}
+              loading={loading}
+              subtitle={`${volumeData?.exchange_count || '--'} exchanges`}
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              }
+            />
+            <StatsCard
+              label="NEAR/BTC"
+              value={priceData?.current.btc?.toFixed(8) || '--'}
+              loading={loading}
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              }
+            />
+            <StatsCard
+              label="Top Exchange"
+              value={volumeData?.top_exchange.name || '--'}
+              loading={loading}
+              subtitle={volumeData?.top_exchange.volume ? formatVolume(volumeData.top_exchange.volume) : undefined}
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              }
+            />
+          </StatsCardGrid>
+        </div>
+
+        {/* Chart Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Price Chart - Now using real TradingView! */}
+          <div className="p-4 rounded-lg bg-card border border-card-border">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-foreground">
+                NEAR/USD Price
+              </h2>
+              {/* ☝️ CONCEPT 7: Time range selector buttons */}
+              <div className="flex gap-2">
+                {(['1H', '24H', '7D', '30D'] as TimeRange[]).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => handleRangeChange(range)}
+                    className={`px-3 py-1 text-xs rounded transition-colors ${
+                      selectedRange === range
+                        ? 'bg-accent text-accent-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-border'
+                    }`}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* ☝️ CONCEPT 8: Passing data to the chart component */}
+            <PriceChart
+              data={priceData?.historical || []}
+              height={300}
+              loading={loading}
+            />
+          </div>
+
+          {/* ☝️ CONCEPT 9: Exchange Volume Distribution - Custom SVG Pie Chart */}
+          <div className="p-4 rounded-lg bg-card border border-card-border">
+            <h2 className="text-lg font-medium text-foreground mb-4">
+              Exchange Volume Distribution
+            </h2>
+            <ExchangePieChart
+              data={volumeData?.exchanges?.map((ex) => ({
+                name: ex.name,
+                value: ex.volume_usd,
+              })) || []}
+              height={300}
+              loading={loading}
+            />
+          </div>
+        </div>
+
+        {/* ☝️ CONCEPT 10: Exchange Bar Chart - CSS-based horizontal bars */}
+        {/* Note: Removed VolumeTimeChart because TradingView Histogram is for time-series data,
+            not categorical data. The bar chart below shows exchange comparison correctly. */}
+        <div className="p-4 rounded-lg bg-card border border-card-border">
+          <h2 className="text-lg font-medium text-foreground mb-4">
+            Top Exchanges by Volume
+          </h2>
+          <ExchangeBarChart
+            data={volumeData?.exchanges?.map((ex) => ({
+              name: ex.name,
+              value: ex.volume_usd,
+              trustScore: ex.trust_score,
+            })) || []}
+            height={280}
+            loading={loading}
+            maxBars={10}
+          />
         </div>
       </main>
+
+      {/* ☝️ Using our new polished Footer component */}
+      <Footer />
     </div>
   );
 }
