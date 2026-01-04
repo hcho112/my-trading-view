@@ -18,8 +18,12 @@ jobs:
     steps:
       - name: Fetch Data from API
         run: |
-          response=$(curl -s -w "\n%{http_code}" -X POST \
-            "${{ secrets.APP_URL }}/api/cron/fetch-data" \
+          # Remove trailing slash from APP_URL if present
+          APP_URL="${{ secrets.APP_URL }}"
+          APP_URL="${APP_URL%/}"
+
+          response=$(curl -s -L -w "\n%{http_code}" -X POST \
+            "${APP_URL}/api/cron/fetch-data" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json")
 
