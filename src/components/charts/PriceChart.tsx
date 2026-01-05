@@ -114,6 +114,20 @@ export function PriceChart({ data, height = 400, loading = false }: PriceChartPr
         timeVisible: true,        // Show time in tooltip
         secondsVisible: false,    // Don't show seconds
       },
+
+      // ☝️ CONCEPT: Localization for timezone handling
+      // TradingView displays UTC by default. We add custom formatters
+      // to convert to the user's local timezone.
+      localization: {
+        timeFormatter: (time: number) => {
+          // Convert Unix timestamp to local time string
+          const date = new Date(time * 1000);
+          return date.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+        },
+      },
     });
 
     // Store chart reference for later use

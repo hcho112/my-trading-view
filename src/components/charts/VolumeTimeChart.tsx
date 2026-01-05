@@ -100,13 +100,21 @@ export function VolumeTimeChart({
         timeVisible: true,
         secondsVisible: false,
       },
-      // ☝️ CONCEPT 4: Localization for volume formatting
+      // ☝️ CONCEPT 4: Localization for volume and time formatting
       localization: {
         priceFormatter: (price: number) => {
           if (price >= 1_000_000_000) return `$${(price / 1_000_000_000).toFixed(1)}B`;
           if (price >= 1_000_000) return `$${(price / 1_000_000).toFixed(1)}M`;
           if (price >= 1_000) return `$${(price / 1_000).toFixed(0)}K`;
           return `$${price.toFixed(0)}`;
+        },
+        // Convert Unix timestamp to local timezone
+        timeFormatter: (time: number) => {
+          const date = new Date(time * 1000);
+          return date.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+          });
         },
       },
     });
