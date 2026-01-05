@@ -30,6 +30,20 @@ export async function GET(): Promise<NextResponse> {
       );
     }
 
+    // Get oldest volume from 24h ago to calculate change
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const oldestVolume = await volumesCollection.findOne(
+      { timestamp: { $gte: twentyFourHoursAgo } },
+      { sort: { timestamp: 1 } }
+    );
+
+    let volumeChange24h = 0;
+    if (oldestVolume && oldestVolume.total_volume_usd) {
+      const oldVolume = oldestVolume.total_volume_usd;
+      const newVolume = latestVolume.total_volume_usd;
+      volumeChange24h = ((newVolume - oldVolume) / oldVolume) * 100;
+    }
+
     // Calculate distribution percentages for pie chart
     const distribution: ExchangePieData[] = latestVolume.exchanges
       .slice(0, EXCHANGE_CONFIG.MAX_DISPLAY_EXCHANGES)
@@ -62,6 +76,7 @@ export async function GET(): Promise<NextResponse> {
       data: {
         total_volume_usd: latestVolume.total_volume_usd,
         total_volume_near: latestVolume.total_volume_near,
+        volume_change_24h: volumeChange24h,
         exchange_count: latestVolume.exchange_count,
         exchanges: latestVolume.exchanges,
         distribution,

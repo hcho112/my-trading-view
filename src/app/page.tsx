@@ -27,6 +27,7 @@ interface PriceData {
     usd: number;
     usd_24h_change: number;
     btc: number;
+    btc_24h_change: number;
   };
   historical: Array<{
     time: Time;
@@ -43,6 +44,7 @@ interface ExchangeData {
 
 interface VolumeData {
   total_volume_24h: number;
+  volume_change_24h: number;
   exchange_count: number;
   exchanges: ExchangeData[];
   top_exchange: {
@@ -113,6 +115,7 @@ export default function Dashboard() {
           usd: prices?.current?.near_usd || 0,
           usd_24h_change: prices?.current?.price_change_24h || 0,
           btc: prices?.current?.near_btc || 0,
+          btc_24h_change: prices?.current?.near_btc_change_24h || 0,
         },
         historical: prices?.historical || [],
       });
@@ -126,6 +129,7 @@ export default function Dashboard() {
 
       setVolumeData({
         total_volume_24h: volumes?.total_volume_usd || 0,  // Fixed: API returns total_volume_usd
+        volume_change_24h: volumes?.volume_change_24h || 0,
         exchange_count: exchanges.length,
         exchanges,
         top_exchange: exchanges[0]
@@ -222,6 +226,8 @@ export default function Dashboard() {
             <StatsCard
               label="24h Volume"
               value={formatVolume(volumeData?.total_volume_24h || 0)}
+              change={volumeData?.volume_change_24h}
+              changeLabel="(24h)"
               loading={loading}
               subtitle={`${volumeData?.exchange_count || '--'} exchanges`}
               icon={
@@ -233,6 +239,8 @@ export default function Dashboard() {
             <StatsCard
               label="NEAR/BTC"
               value={priceData?.current.btc?.toFixed(8) || '--'}
+              change={priceData?.current.btc_24h_change}
+              changeLabel="(24h)"
               loading={loading}
               icon={
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

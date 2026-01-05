@@ -195,6 +195,7 @@ export interface PricesApiResponse {
     near_btc: number;
     near_eth: number;
     price_change_24h: number;
+    near_btc_change_24h: number;
     market_cap: number;
     volume_24h: number;
   };
@@ -205,6 +206,7 @@ export interface PricesApiResponse {
 export interface VolumesApiResponse {
   total_volume_usd: number;
   total_volume_near: number;
+  volume_change_24h: number;
   exchange_count: number;
   exchanges: ExchangeVolume[];
   distribution: ExchangePieData[];

@@ -66,6 +66,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       value: doc.near_usd,
     }));
 
+    // Calculate NEAR/BTC change by comparing with oldest price in range
+    // Use the 24h range for comparison regardless of selected range
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const oldestPrice = await pricesCollection.findOne(
+      { timestamp: { $gte: twentyFourHoursAgo } },
+      { sort: { timestamp: 1 } }
+    );
+
+    let nearBtcChange24h = 0;
+    if (oldestPrice && oldestPrice.near_btc) {
+      const oldRatio = oldestPrice.near_btc;
+      const newRatio = latestPrice.near_btc;
+      nearBtcChange24h = ((newRatio - oldRatio) / oldRatio) * 100;
+    }
+
     const response: ApiResponse<PricesApiResponse> = {
       success: true,
       data: {
@@ -76,6 +91,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           near_btc: latestPrice.near_btc,
           near_eth: latestPrice.near_eth,
           price_change_24h: latestPrice.price_change_24h || 0,
+          near_btc_change_24h: nearBtcChange24h,
           market_cap: latestPrice.market_cap || 0,
           volume_24h: latestPrice.volume_24h || 0,
         },
