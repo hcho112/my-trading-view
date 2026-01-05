@@ -131,9 +131,12 @@ export interface CoinGeckoTickersResponse {
 
 /**
  * Data point for TradingView line chart
+ * TradingView accepts:
+ * - string: 'YYYY-MM-DD' format for daily data
+ * - number: Unix timestamp (seconds) for intraday data
  */
 export interface ChartDataPoint {
-  time: string; // Format: 'YYYY-MM-DD' or Unix timestamp
+  time: string | number;
   value: number;
 }
 
