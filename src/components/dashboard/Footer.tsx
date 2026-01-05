@@ -3,7 +3,7 @@
 // ============================================
 // A clean footer with tech stack info and portfolio links.
 
-'use client';
+"use client";
 
 interface FooterProps {
   lastUpdated?: string;
@@ -44,7 +44,7 @@ export function Footer({ lastUpdated }: FooterProps) {
           <span>&copy; {currentYear} NEAR Trading Dashboard</span>
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com/yourusername"
+              href="https://github.com/hcho112"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"
@@ -52,20 +52,12 @@ export function Footer({ lastUpdated }: FooterProps) {
               GitHub
             </a>
             <a
-              href="https://linkedin.com/in/yourusername"
+              href="https://www.linkedin.com/in/hyunjun-cho-8587136b/"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"
             >
               LinkedIn
-            </a>
-            <a
-              href="https://yourportfolio.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              Portfolio
             </a>
           </div>
         </div>

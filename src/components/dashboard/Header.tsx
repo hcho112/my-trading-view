@@ -131,7 +131,7 @@ export function Header({ onRefresh, loading = false }: HeaderProps) {
 
             {/* GitHub Link */}
             <a
-              href="https://github.com/yourusername/my-trading-view"
+              href="https://github.com/hcho112/my-trading-view"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
