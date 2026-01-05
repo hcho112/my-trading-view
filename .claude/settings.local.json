@@ -10,7 +10,8 @@
       "WebFetch(domain:my-trading-view.vercel.app)",
       "Bash(git ls-tree:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

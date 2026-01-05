@@ -51,6 +51,14 @@ interface VolumeData {
   };
 }
 
+// Volume history for time-series chart
+interface VolumeHistoryData {
+  historical: Array<{
+    time: Time;
+    value: number;
+  }>;
+}
+
 // Time range options for the chart
 type TimeRange = '1H' | '24H' | '7D' | '30D';
 
@@ -59,6 +67,7 @@ export default function Dashboard() {
   // We need to track: data, loading state, and errors
   const [priceData, setPriceData] = useState<PriceData | null>(null);
   const [volumeData, setVolumeData] = useState<VolumeData | null>(null);
+  const [volumeHistory, setVolumeHistory] = useState<VolumeHistoryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRange, setSelectedRange] = useState<TimeRange>('24H');
@@ -71,12 +80,13 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
 
-      // Fetch both prices and volumes in parallel
+      // Fetch prices, volumes, and volume history in parallel
       // Promise.all runs multiple promises concurrently - more efficient!
       // Note: API expects lowercase range (1h, 24h, 7d, 30d)
-      const [pricesRes, volumesRes] = await Promise.all([
+      const [pricesRes, volumesRes, volumeHistoryRes] = await Promise.all([
         fetch(`/api/prices?range=${selectedRange.toLowerCase()}`),
         fetch('/api/volumes'),
+        fetch(`/api/volumes/history?range=${selectedRange.toLowerCase()}`),
       ]);
 
       // Check for HTTP errors
@@ -88,10 +98,12 @@ export default function Dashboard() {
       // ☝️ Our API returns: { success: boolean, data: {...}, timestamp: string }
       const pricesResponse = await pricesRes.json();
       const volumesResponse = await volumesRes.json();
+      const volumeHistoryResponse = volumeHistoryRes.ok ? await volumeHistoryRes.json() : null;
 
       // Extract data from the standardized API response format
       const prices = pricesResponse.data;
       const volumes = volumesResponse.data;
+      const volHistory = volumeHistoryResponse?.data;
 
       // The API already returns historical data in chart format:
       // { time: 'YYYY-MM-DD', value: number }
@@ -119,6 +131,11 @@ export default function Dashboard() {
         top_exchange: exchanges[0]
           ? { name: exchanges[0].name, volume: exchanges[0].volume_usd }
           : { name: 'Unknown', volume: 0 },
+      });
+
+      // Set volume history for time-series chart
+      setVolumeHistory({
+        historical: volHistory?.historical || [],
       });
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -270,6 +287,26 @@ export default function Dashboard() {
             />
           </div>
 
+          {/* Volume Over Time Chart - TradingView Histogram */}
+          <div className="p-4 rounded-lg bg-card border border-card-border">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-foreground">
+                Trading Volume Over Time
+              </h2>
+              <div className="text-xs text-muted-foreground">
+                {selectedRange} view
+              </div>
+            </div>
+            <VolumeTimeChart
+              data={volumeHistory?.historical || []}
+              height={300}
+              loading={loading}
+            />
+          </div>
+        </div>
+
+        {/* Exchange Distribution Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* ☝️ CONCEPT 9: Exchange Volume Distribution - Custom SVG Pie Chart */}
           <div className="p-4 rounded-lg bg-card border border-card-border">
             <h2 className="text-lg font-medium text-foreground mb-4">
@@ -284,26 +321,25 @@ export default function Dashboard() {
               loading={loading}
             />
           </div>
+
+          {/* ☝️ CONCEPT 10: Exchange Bar Chart - CSS-based horizontal bars */}
+          <div className="p-4 rounded-lg bg-card border border-card-border">
+            <h2 className="text-lg font-medium text-foreground mb-4">
+              Top Exchanges by Volume
+            </h2>
+            <ExchangeBarChart
+              data={volumeData?.exchanges?.map((ex) => ({
+                name: ex.name,
+                value: ex.volume_usd,
+                trustScore: ex.trust_score,
+              })) || []}
+              height={280}
+              loading={loading}
+              maxBars={10}
+            />
+          </div>
         </div>
 
-        {/* ☝️ CONCEPT 10: Exchange Bar Chart - CSS-based horizontal bars */}
-        {/* Note: Removed VolumeTimeChart because TradingView Histogram is for time-series data,
-            not categorical data. The bar chart below shows exchange comparison correctly. */}
-        <div className="p-4 rounded-lg bg-card border border-card-border">
-          <h2 className="text-lg font-medium text-foreground mb-4">
-            Top Exchanges by Volume
-          </h2>
-          <ExchangeBarChart
-            data={volumeData?.exchanges?.map((ex) => ({
-              name: ex.name,
-              value: ex.volume_usd,
-              trustScore: ex.trust_score,
-            })) || []}
-            height={280}
-            loading={loading}
-            maxBars={10}
-          />
-        </div>
       </main>
 
       {/* ☝️ Using our new polished Footer component */}
