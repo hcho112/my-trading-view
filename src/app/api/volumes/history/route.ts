@@ -63,14 +63,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       .toArray();
 
     // Transform to chart data format
-    // Use Unix timestamps for intraday (1h, 24h) to show each data point
-    // Use YYYY-MM-DD for longer ranges (7d, 30d) for cleaner display
-    const useUnixTimestamp = range === '1h' || range === '24h';
-
+    // Always use Unix timestamps to ensure unique, ascending time values
+    // TradingView requires strictly ascending timestamps (no duplicates)
     const historical: ChartDataPoint[] = historicalVolumes.map((doc) => ({
-      time: useUnixTimestamp
-        ? Math.floor(doc.timestamp.getTime() / 1000) // Unix timestamp in seconds
-        : doc.timestamp.toISOString().split('T')[0],  // YYYY-MM-DD
+      time: Math.floor(doc.timestamp.getTime() / 1000), // Unix timestamp in seconds
       value: doc.total_volume_usd,
     }));
 
