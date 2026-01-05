@@ -49,13 +49,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       timestamp: new Date(),
     });
 
-    // Update metadata
+    // Update metadata (3 API calls: /simple/price, /coins/near, /coins/near/tickers)
     const today = new Date().toISOString().split('T')[0];
     await metadataCollection.updateOne(
       { key: 'api_usage' },
       {
         $set: { last_updated: new Date() },
-        $inc: { api_calls_today: 2, api_calls_month: 2 },
+        $inc: { api_calls_today: 3, api_calls_month: 3 },
         $setOnInsert: { key: 'api_usage', last_reset_date: new Date(today) },
       },
       { upsert: true }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           { key: 'api_usage' },
           {
             $set: {
-              api_calls_today: 2,
+              api_calls_today: 3,
               last_reset_date: new Date(today),
             },
           }

@@ -28,6 +28,15 @@ interface PriceData {
     usd_24h_change: number;
     btc: number;
     btc_24h_change: number;
+    // New trader-focused metrics
+    market_cap_rank: number;
+    ath: number;
+    ath_change_percentage: number;
+    price_change_7d: number;
+    price_change_30d: number;
+    high_24h: number;
+    low_24h: number;
+    circulating_supply: number;
   };
   historical: Array<{
     time: Time;
@@ -116,6 +125,15 @@ export default function Dashboard() {
           usd_24h_change: prices?.current?.price_change_24h || 0,
           btc: prices?.current?.near_btc || 0,
           btc_24h_change: prices?.current?.near_btc_change_24h || 0,
+          // New trader-focused metrics
+          market_cap_rank: prices?.current?.market_cap_rank || 0,
+          ath: prices?.current?.ath || 0,
+          ath_change_percentage: prices?.current?.ath_change_percentage || 0,
+          price_change_7d: prices?.current?.price_change_7d || 0,
+          price_change_30d: prices?.current?.price_change_30d || 0,
+          high_24h: prices?.current?.high_24h || 0,
+          low_24h: prices?.current?.low_24h || 0,
+          circulating_supply: prices?.current?.circulating_supply || 0,
         },
         historical: prices?.historical || [],
       });
@@ -249,13 +267,62 @@ export default function Dashboard() {
               }
             />
             <StatsCard
-              label="Top Exchange"
-              value={volumeData?.top_exchange.name || '--'}
+              label="From ATH"
+              value={priceData?.current.ath_change_percentage ? `${priceData.current.ath_change_percentage.toFixed(1)}%` : '--'}
               loading={loading}
-              subtitle={volumeData?.top_exchange.volume ? formatVolume(volumeData.top_exchange.volume) : undefined}
+              subtitle={priceData?.current.ath ? `ATH: ${formatPrice(priceData.current.ath)}` : undefined}
               icon={
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              }
+            />
+          </StatsCardGrid>
+        </div>
+
+        {/* Second Row: Additional Trader Metrics */}
+        <div className="mb-8">
+          <StatsCardGrid>
+            <StatsCard
+              label="7D Change"
+              value={priceData?.current.price_change_7d ? `${priceData.current.price_change_7d >= 0 ? '+' : ''}${priceData.current.price_change_7d.toFixed(2)}%` : '--'}
+              loading={loading}
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                </svg>
+              }
+            />
+            <StatsCard
+              label="30D Change"
+              value={priceData?.current.price_change_30d ? `${priceData.current.price_change_30d >= 0 ? '+' : ''}${priceData.current.price_change_30d.toFixed(2)}%` : '--'}
+              loading={loading}
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              }
+            />
+            <StatsCard
+              label="24H Range"
+              value={priceData?.current.high_24h && priceData?.current.low_24h
+                ? `${formatPrice(priceData.current.low_24h)} - ${formatPrice(priceData.current.high_24h)}`
+                : '--'}
+              loading={loading}
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+              }
+            />
+            <StatsCard
+              label="Market Rank"
+              value={priceData?.current.market_cap_rank ? `#${priceData.current.market_cap_rank}` : '--'}
+              loading={loading}
+              subtitle={`${volumeData?.exchange_count || '--'} exchanges`}
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
               }
             />

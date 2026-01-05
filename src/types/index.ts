@@ -22,6 +22,20 @@ export interface PriceDocument {
   market_cap?: number;
   volume_24h?: number;
   price_change_24h?: number;
+  // New fields from /coins/near endpoint
+  market_cap_rank?: number;
+  ath?: number;
+  ath_change_percentage?: number;
+  ath_date?: string;
+  atl?: number;
+  atl_change_percentage?: number;
+  price_change_7d?: number;
+  price_change_30d?: number;
+  high_24h?: number;
+  low_24h?: number;
+  circulating_supply?: number;
+  total_supply?: number;
+  fully_diluted_valuation?: number;
 }
 
 /**
@@ -125,6 +139,34 @@ export interface CoinGeckoTickersResponse {
   tickers: CoinGeckoTicker[];
 }
 
+/**
+ * CoinGecko /coins/{id} response - rich market data
+ */
+export interface CoinGeckoCoinResponse {
+  id: string;
+  symbol: string;
+  name: string;
+  market_cap_rank: number;
+  market_data: {
+    current_price: { usd: number };
+    ath: { usd: number };
+    ath_change_percentage: { usd: number };
+    ath_date: { usd: string };
+    atl: { usd: number };
+    atl_change_percentage: { usd: number };
+    high_24h: { usd: number };
+    low_24h: { usd: number };
+    price_change_percentage_7d: number;
+    price_change_percentage_30d: number;
+    price_change_percentage_24h: number;
+    market_cap: { usd: number };
+    fully_diluted_valuation: { usd: number };
+    total_volume: { usd: number };
+    circulating_supply: number;
+    total_supply: number;
+  };
+}
+
 // ============================================
 // Frontend/Chart Types
 // ============================================
@@ -198,6 +240,15 @@ export interface PricesApiResponse {
     near_btc_change_24h: number;
     market_cap: number;
     volume_24h: number;
+    // New trader-focused metrics
+    market_cap_rank: number;
+    ath: number;
+    ath_change_percentage: number;
+    price_change_7d: number;
+    price_change_30d: number;
+    high_24h: number;
+    low_24h: number;
+    circulating_supply: number;
   };
   historical: ChartDataPoint[];
   lastUpdated: string;

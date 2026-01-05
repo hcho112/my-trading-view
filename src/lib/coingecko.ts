@@ -7,6 +7,7 @@
 import type {
   CoinGeckoPriceResponse,
   CoinGeckoTickersResponse,
+  CoinGeckoCoinResponse,
   PriceDocument,
   VolumeDocument,
   ExchangeVolume,
@@ -117,16 +118,30 @@ export async function fetchPrices(): Promise<CoinGeckoPriceResponse> {
 }
 
 /**
+ * Fetch rich market data for NEAR from /coins/near endpoint
+ * Includes: ATH, 7d/30d change, market cap rank, 24h high/low, supply
+ */
+export async function fetchCoinData(): Promise<CoinGeckoCoinResponse> {
+  const data = await fetchFromCoinGecko<CoinGeckoCoinResponse>(
+    '/coins/near?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false'
+  );
+
+  return data;
+}
+
+/**
  * Transform CoinGecko price response to our PriceDocument format
+ * Now accepts optional coin data for rich market metrics
  */
 export function transformPriceData(
-  data: CoinGeckoPriceResponse
+  data: CoinGeckoPriceResponse,
+  coinData?: CoinGeckoCoinResponse
 ): Omit<PriceDocument, '_id'> {
   const nearUsd = data.near.usd;
   const btcUsd = data.bitcoin.usd;
   const ethUsd = data.ethereum.usd;
 
-  return {
+  const baseData = {
     timestamp: new Date(),
     near_usd: nearUsd,
     btc_usd: btcUsd,
@@ -137,6 +152,29 @@ export function transformPriceData(
     volume_24h: data.near.usd_24h_vol,
     price_change_24h: data.near.usd_24h_change,
   };
+
+  // Add rich market data if available
+  if (coinData?.market_data) {
+    const md = coinData.market_data;
+    return {
+      ...baseData,
+      market_cap_rank: coinData.market_cap_rank,
+      ath: md.ath?.usd,
+      ath_change_percentage: md.ath_change_percentage?.usd,
+      ath_date: md.ath_date?.usd,
+      atl: md.atl?.usd,
+      atl_change_percentage: md.atl_change_percentage?.usd,
+      price_change_7d: md.price_change_percentage_7d,
+      price_change_30d: md.price_change_percentage_30d,
+      high_24h: md.high_24h?.usd,
+      low_24h: md.low_24h?.usd,
+      circulating_supply: md.circulating_supply,
+      total_supply: md.total_supply,
+      fully_diluted_valuation: md.fully_diluted_valuation?.usd,
+    };
+  }
+
+  return baseData;
 }
 
 // ============================================
@@ -218,19 +256,23 @@ export function transformVolumeData(
 
 /**
  * Fetch all data needed for the dashboard
- * Makes 2 API calls total
+ * Makes 3 API calls total:
+ * - /simple/price for basic prices
+ * - /coins/near for rich market data (ATH, 7d change, rank, etc.)
+ * - /coins/near/tickers for exchange volumes
  */
 export async function fetchAllData(): Promise<{
   prices: Omit<PriceDocument, '_id'>;
   volumes: Omit<VolumeDocument, '_id'>;
 }> {
-  const [priceData, tickerData] = await Promise.all([
+  const [priceData, coinData, tickerData] = await Promise.all([
     fetchPrices(),
+    fetchCoinData(),
     fetchTickers(),
   ]);
 
   return {
-    prices: transformPriceData(priceData),
+    prices: transformPriceData(priceData, coinData),
     volumes: transformVolumeData(tickerData),
   };
 }
