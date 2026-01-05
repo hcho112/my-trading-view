@@ -113,7 +113,7 @@ export default function Dashboard() {
       })) || [];
 
       setVolumeData({
-        total_volume_24h: volumes?.total_volume_24h || 0,
+        total_volume_24h: volumes?.total_volume_usd || 0,  // Fixed: API returns total_volume_usd
         exchange_count: exchanges.length,
         exchanges,
         top_exchange: exchanges[0]
