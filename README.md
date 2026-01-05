@@ -13,16 +13,16 @@ A real-time cryptocurrency dashboard tracking NEAR Protocol trading activity acr
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript |
-| Styling | TailwindCSS v4 |
-| Charts | TradingView Lightweight Charts |
-| Database | MongoDB Atlas (M0 Free Tier) |
-| Data Source | CoinGecko API (Free Tier) |
-| Deployment | Vercel |
-| Cron Jobs | GitHub Actions |
+| Category    | Technology                     |
+| ----------- | ------------------------------ |
+| Framework   | Next.js 16 (App Router)        |
+| Language    | TypeScript                     |
+| Styling     | TailwindCSS v4                 |
+| Charts      | TradingView Lightweight Charts |
+| Database    | MongoDB Atlas (M0 Free Tier)   |
+| Data Source | CoinGecko API (Free Tier)      |
+| Deployment  | Vercel                         |
+| Cron Jobs   | GitHub Actions                 |
 
 ## Architecture
 
@@ -58,17 +58,20 @@ A real-time cryptocurrency dashboard tracking NEAR Protocol trading activity acr
 ### Installation
 
 1. Clone the repository:
+
 ```bash
-git clone https://github.com/yourusername/my-trading-view.git
+git clone https://github.com/hcho112/my-trading-view.git
 cd my-trading-view
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create `.env.local`:
+
 ```env
 MONGODB_URI=mongodb+srv://...
 MONGODB_DB_NAME=my-trading-view
@@ -77,11 +80,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 4. Run the development server:
+
 ```bash
 npm run dev
 ```
 
 5. Seed initial data:
+
 ```bash
 curl -X POST http://localhost:3000/api/cron/fetch-data \
   -H "Authorization: Bearer your-secret-key"
@@ -122,24 +127,27 @@ src/
 ## Charts Overview
 
 ### TradingView Charts
+
 - **PriceChart** - Line series for NEAR/USD price history
 - **VolumeTimeChart** - Histogram series for volume over time
 
 ### Custom Charts
+
 - **ExchangePieChart** - SVG donut chart for volume distribution
 - **ExchangeBarChart** - CSS horizontal bars for exchange comparison
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/prices` | GET | Current and historical prices |
-| `/api/volumes` | GET | Volume distribution by exchange |
-| `/api/cron/fetch-data` | POST | Fetch fresh data (requires auth) |
+| Endpoint               | Method | Description                      |
+| ---------------------- | ------ | -------------------------------- |
+| `/api/prices`          | GET    | Current and historical prices    |
+| `/api/volumes`         | GET    | Volume distribution by exchange  |
+| `/api/cron/fetch-data` | POST   | Fetch fresh data (requires auth) |
 
 ### Query Parameters
 
 **GET /api/prices**
+
 - `range`: `1h` | `24h` | `7d` | `30d` (default: `24h`)
 
 ## Deployment
@@ -156,21 +164,23 @@ src/
 The `.github/workflows/fetch-data.yml` runs every 15 minutes to fetch fresh data.
 
 Required secrets:
+
 - `APP_URL`: Your Vercel deployment URL
 - `CRON_SECRET`: Secret key for authentication
 
 ## Free Tier Limits
 
-| Service | Limit | Usage |
-|---------|-------|-------|
-| CoinGecko API | 10,000 calls/month | ~192 calls/day |
-| MongoDB Atlas M0 | 512 MB storage | Minimal |
-| Vercel Hobby | 100 GB bandwidth | Minimal |
-| GitHub Actions | 2,000 min/month | ~60 min/month |
+| Service          | Limit              | Usage          |
+| ---------------- | ------------------ | -------------- |
+| CoinGecko API    | 10,000 calls/month | ~192 calls/day |
+| MongoDB Atlas M0 | 512 MB storage     | Minimal        |
+| Vercel Hobby     | 100 GB bandwidth   | Minimal        |
+| GitHub Actions   | 2,000 min/month    | ~60 min/month  |
 
 ## What I Learned
 
 This project demonstrates:
+
 - TradingView Lightweight Charts integration with React/Next.js
 - Next.js 16 App Router patterns and API routes
 - MongoDB Atlas with TypeScript
