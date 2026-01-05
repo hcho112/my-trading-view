@@ -4,9 +4,9 @@
 // A polished header component with branding,
 // navigation, and dark/light mode toggle.
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   onRefresh?: () => void;
@@ -16,30 +16,35 @@ interface HeaderProps {
 export function Header({ onRefresh, loading = false }: HeaderProps) {
   // ☝️ CONCEPT 1: Theme state management
   // We store the theme in localStorage and sync with system preference
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [mounted, setMounted] = useState(false);
 
   // ☝️ CONCEPT 2: Initialize theme on mount
   useEffect(() => {
     setMounted(true);
     // Check localStorage first, then system preference
-    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    const savedTheme = localStorage.getItem("theme") as "dark" | "light" | null;
     if (savedTheme) {
       setTheme(savedTheme);
-      document.documentElement.classList.toggle('light', savedTheme === 'light');
+      document.documentElement.classList.toggle(
+        "light",
+        savedTheme === "light"
+      );
     } else {
       // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme(prefersDark ? 'dark' : 'light');
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      setTheme(prefersDark ? "dark" : "light");
     }
   }, []);
 
   // ☝️ CONCEPT 3: Toggle theme function
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('light', newTheme === 'light');
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("light", newTheme === "light");
   };
 
   // ☝️ CONCEPT 4: Prevent hydration mismatch
@@ -62,7 +67,9 @@ export function Header({ onRefresh, loading = false }: HeaderProps) {
           <div className="flex items-center gap-3">
             {/* NEAR Logo */}
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg shadow-accent/20">
-              <span className="text-accent-foreground font-bold text-lg">N</span>
+              <span className="text-accent-foreground font-bold text-lg">
+                N
+              </span>
             </div>
             <div>
               <h1 className="text-lg font-semibold text-foreground">
@@ -85,7 +92,7 @@ export function Header({ onRefresh, loading = false }: HeaderProps) {
                 title="Refresh data"
               >
                 <svg
-                  className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+                  className={`w-5 h-5 ${loading ? "animate-spin" : ""}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -104,11 +111,16 @@ export function Header({ onRefresh, loading = false }: HeaderProps) {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
             >
-              {theme === 'dark' ? (
+              {theme === "dark" ? (
                 // Sun icon for light mode
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -118,7 +130,12 @@ export function Header({ onRefresh, loading = false }: HeaderProps) {
                 </svg>
               ) : (
                 // Moon icon for dark mode
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
