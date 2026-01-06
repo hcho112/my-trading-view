@@ -48,6 +48,8 @@ export function ExchangePieChart({
 }: ExchangePieChartProps) {
   // Track which slice is hovered for interactivity
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // Track mouse position for tooltip
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   // ☝️ CONCEPT 3: Calculate pie chart geometry with useMemo
   // useMemo caches the calculation so it doesn't re-run on every render
@@ -202,7 +204,19 @@ export function ExchangePieChart({
               style={{
                 opacity: hoveredIndex === null || hoveredIndex === index ? 1 : 0.5,
               }}
-              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseEnter={(e) => {
+                setHoveredIndex(index);
+                const rect = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+                if (rect) {
+                  setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                }
+              }}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+                if (rect) {
+                  setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                }
+              }}
               onMouseLeave={() => setHoveredIndex(null)}
             />
           ))}
@@ -230,6 +244,31 @@ export function ExchangePieChart({
             )}
           </div>
         </div>
+
+        {/* ☝️ CONCEPT 10: Floating tooltip on hover */}
+        {hoveredIndex !== null && (
+          <div
+            className="absolute z-10 px-3 py-2 text-sm bg-card border border-card-border rounded-lg shadow-lg pointer-events-none whitespace-nowrap"
+            style={{
+              left: tooltipPos.x + 10,
+              top: tooltipPos.y - 40,
+              transform: tooltipPos.x > size / 2 ? 'translateX(-100%)' : 'translateX(0)',
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: chartData.slices[hoveredIndex].color }}
+              />
+              <span className="font-medium text-foreground">
+                {chartData.slices[hoveredIndex].name}
+              </span>
+            </div>
+            <div className="text-muted-foreground">
+              {formatVolume(chartData.slices[hoveredIndex].value)} ({(chartData.slices[hoveredIndex].percentage * 100).toFixed(1)}%)
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ☝️ CONCEPT 9: Legend */}
