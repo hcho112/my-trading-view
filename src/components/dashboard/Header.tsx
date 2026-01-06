@@ -7,6 +7,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface HeaderProps {
   onRefresh?: () => void;
@@ -73,7 +74,7 @@ export function Header({ onRefresh, loading = false }: HeaderProps) {
             </div>
             <div>
               <h1 className="text-lg font-semibold text-foreground">
-                NEAR Dashboard
+                NEAR Trading Dashboard
               </h1>
               <p className="text-xs text-muted-foreground hidden sm:block">
                 Real-time trading metrics
@@ -83,6 +84,14 @@ export function Header({ onRefresh, loading = false }: HeaderProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            {/* About Link */}
+            <Link
+              href="/about"
+              className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+            >
+              About
+            </Link>
+
             {/* Refresh Button */}
             {onRefresh && (
               <button
