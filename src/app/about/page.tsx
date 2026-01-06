@@ -10,8 +10,8 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg shadow-accent/20">
-                <span className="text-accent-foreground font-bold text-lg">N</span>
+              <div className="w-9 h-9 rounded-lg bg-black flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-lg">N</span>
               </div>
               <div>
                 <h1 className="text-lg font-semibold text-foreground">NEAR Dashboard</h1>

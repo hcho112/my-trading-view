@@ -67,8 +67,8 @@ export function Header({ onRefresh, loading = false }: HeaderProps) {
           {/* Logo and Title */}
           <div className="flex items-center gap-3">
             {/* NEAR Logo */}
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg shadow-accent/20">
-              <span className="text-accent-foreground font-bold text-lg">
+            <div className="w-9 h-9 rounded-lg bg-black flex items-center justify-center shadow-md">
+              <span className="text-white font-bold text-lg">
                 N
               </span>
             </div>
