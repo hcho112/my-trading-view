@@ -15,6 +15,7 @@ import { PriceChart } from '@/components/charts/PriceChart';
 import { ExchangePieChart } from '@/components/charts/ExchangePieChart';
 import { ExchangeBarChart } from '@/components/charts/ExchangeBarChart';
 import { VolumeTimeChart } from '@/components/charts/VolumeTimeChart';
+import { ExchangeVolumeTrendChart } from '@/components/charts/ExchangeVolumeTrendChart';
 import { Header } from '@/components/dashboard/Header';
 import { Footer } from '@/components/dashboard/Footer';
 import { StatsCard, StatsCardGrid } from '@/components/dashboard/StatsCard';
@@ -70,6 +71,22 @@ interface VolumeHistoryData {
   }>;
 }
 
+// Exchange volume time series for trend chart
+interface ExchangeTimeSeries {
+  name: string;
+  color: string;
+  data: Array<{
+    time: number;
+    value: number;
+  }>;
+}
+
+interface ExchangeVolumeHistoryData {
+  exchanges: ExchangeTimeSeries[];
+  timestamps: number[];
+  lastUpdated: string;
+}
+
 // Time range options for the chart
 type TimeRange = '1H' | '24H' | '7D' | '30D';
 
@@ -79,6 +96,7 @@ export default function Dashboard() {
   const [priceData, setPriceData] = useState<PriceData | null>(null);
   const [volumeData, setVolumeData] = useState<VolumeData | null>(null);
   const [volumeHistory, setVolumeHistory] = useState<VolumeHistoryData | null>(null);
+  const [exchangeVolumeHistory, setExchangeVolumeHistory] = useState<ExchangeVolumeHistoryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRange, setSelectedRange] = useState<TimeRange>('24H');
@@ -94,10 +112,11 @@ export default function Dashboard() {
       // Fetch prices, volumes, and volume history in parallel
       // Promise.all runs multiple promises concurrently - more efficient!
       // Note: API expects lowercase range (1h, 24h, 7d, 30d)
-      const [pricesRes, volumesRes, volumeHistoryRes] = await Promise.all([
+      const [pricesRes, volumesRes, volumeHistoryRes, exchangeVolumeHistoryRes] = await Promise.all([
         fetch(`/api/prices?range=${selectedRange.toLowerCase()}`),
         fetch('/api/volumes'),
         fetch(`/api/volumes/history?range=${selectedRange.toLowerCase()}`),
+        fetch(`/api/volumes/history/exchanges?range=${selectedRange.toLowerCase()}`),
       ]);
 
       // Check for HTTP errors
@@ -110,6 +129,7 @@ export default function Dashboard() {
       const pricesResponse = await pricesRes.json();
       const volumesResponse = await volumesRes.json();
       const volumeHistoryResponse = volumeHistoryRes.ok ? await volumeHistoryRes.json() : null;
+      const exchangeVolumeHistoryResponse = exchangeVolumeHistoryRes.ok ? await exchangeVolumeHistoryRes.json() : null;
 
       // Extract data from the standardized API response format
       const prices = pricesResponse.data;
@@ -159,6 +179,13 @@ export default function Dashboard() {
       setVolumeHistory({
         historical: volHistory?.historical || [],
       });
+
+      // Set exchange volume history for trend chart
+      if (exchangeVolumeHistoryResponse?.data) {
+        setExchangeVolumeHistory(exchangeVolumeHistoryResponse.data);
+      } else {
+        setExchangeVolumeHistory(null);
+      }
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -374,6 +401,25 @@ export default function Dashboard() {
             </div>
             <VolumeTimeChart
               data={volumeHistory?.historical || []}
+              height={300}
+              loading={loading}
+            />
+          </div>
+        </div>
+
+        {/* Exchange Volume Trend Section */}
+        <div className="mb-8">
+          <div className="p-4 rounded-lg bg-card border border-card-border">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-foreground">
+                Exchange Volume Trend
+              </h2>
+              <div className="text-xs text-muted-foreground">
+                {selectedRange} view · Top 5 exchanges
+              </div>
+            </div>
+            <ExchangeVolumeTrendChart
+              exchanges={exchangeVolumeHistory?.exchanges || []}
               height={300}
               loading={loading}
             />
