@@ -12,14 +12,14 @@ export const API_CONFIG = {
   COINGECKO_CALLS_PER_MONTH: 10000,
 
   // Our fetch interval (in minutes)
-  FETCH_INTERVAL_MINUTES: 15,
+  FETCH_INTERVAL_MINUTES: 30,
 
   // Calculated daily/monthly usage
   get DAILY_API_CALLS() {
-    return (24 * 60) / this.FETCH_INTERVAL_MINUTES * 2; // 2 calls per fetch
+    return (24 * 60) / this.FETCH_INTERVAL_MINUTES * 3; // 3 calls per fetch
   },
   get MONTHLY_API_CALLS() {
-    return this.DAILY_API_CALLS * 30;
+    return this.DAILY_API_CALLS * 31;
   },
 } as const;
 

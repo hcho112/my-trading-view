@@ -7,7 +7,7 @@ import type { FetchDataResult } from '@/types';
 /**
  * POST /api/cron/fetch-data
  *
- * Cron endpoint called by GitHub Actions every 15 minutes.
+ * Cron endpoint called by GitHub Actions every 30 minutes.
  * Fetches data from CoinGecko and stores in MongoDB.
  *
  * Security: Requires CRON_SECRET in Authorization header
@@ -114,7 +114,7 @@ export async function GET(): Promise<NextResponse> {
     endpoint: '/api/cron/fetch-data',
     method: 'POST',
     description: 'Fetches NEAR data from CoinGecko and stores in MongoDB',
-    schedule: 'Every 15 minutes via GitHub Actions',
+    schedule: 'Every 30 minutes via GitHub Actions',
     authentication: 'Bearer token required (CRON_SECRET)',
   });
 }

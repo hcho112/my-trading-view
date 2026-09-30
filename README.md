@@ -29,7 +29,7 @@ A real-time cryptocurrency dashboard tracking NEAR Protocol trading activity acr
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     GitHub Actions                           │
-│                   (Every 15 minutes)                         │
+│                   (Every 30 minutes)                         │
 └─────────────────────┬───────────────────────────────────────┘
                       │ POST /api/cron/fetch-data
                       ▼
@@ -161,7 +161,7 @@ src/
 
 ### GitHub Actions (Cron)
 
-The `.github/workflows/fetch-data.yml` runs every 15 minutes to fetch fresh data.
+The `.github/workflows/fetch-data.yml` runs every 30 minutes to fetch fresh data.
 
 Required secrets:
 

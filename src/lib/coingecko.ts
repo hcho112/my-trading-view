@@ -19,6 +19,9 @@ import type {
 
 const COINGECKO_BASE_URL = 'https://api.coingecko.com/api/v3';
 
+// Demo API key. Keyless requests from shared cloud IPs (Vercel) get 403s.
+const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
+
 // Rate limiting: Track calls to stay within limits
 let callCount = 0;
 let lastResetTime = Date.now();
@@ -83,6 +86,7 @@ async function fetchFromCoinGecko<T>(endpoint: string): Promise<T> {
   const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
+      ...(COINGECKO_API_KEY && { 'x-cg-demo-api-key': COINGECKO_API_KEY }),
     },
     next: { revalidate: 0 }, // Don't cache API responses
   });

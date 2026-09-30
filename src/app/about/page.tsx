@@ -133,7 +133,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-accent mt-1">•</span>
-                  <span><span className="text-foreground">GitHub Actions</span> for scheduled data fetching (cron jobs every 15 minutes)</span>
+                  <span><span className="text-foreground">GitHub Actions</span> for scheduled data fetching (cron jobs every 30 minutes)</span>
                 </li>
               </ul>
             </div>
@@ -149,7 +149,7 @@ export default function AboutPage() {
             <pre className="text-muted-foreground overflow-x-auto">
 {`┌─────────────────────────────────────────────┐
 │           GitHub Actions (Cron)             │
-│         Triggers every 15 minutes           │
+│         Triggers every 30 minutes           │
 └─────────────────┬───────────────────────────┘
                   │ POST /api/cron/fetch-data
                   ▼
@@ -167,7 +167,7 @@ export default function AboutPage() {
             </pre>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            Data is fetched from CoinGecko every 15 minutes via GitHub Actions, stored in MongoDB,
+            Data is fetched from CoinGecko every 30 minutes via GitHub Actions, stored in MongoDB,
             and served to the frontend through Next.js API routes.
           </p>
         </section>
